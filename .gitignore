@@ -1,0 +1,20 @@
+# R user/session files
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+
+# Local/editor/system files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Temporary R output
+*.Rout
+*.Rproj.user/
+
+# Optional local data that should not be committed unless intentionally included
+# *.fastq
+# *.bam
+# *.vcf

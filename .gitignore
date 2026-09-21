@@ -18,3 +18,8 @@ Thumbs.db
 # *.fastq
 # *.bam
 # *.vcf
+
+# Generated outputs
+Outputs/figures/*
+Outputs/tables/*
+Rplots.pdf

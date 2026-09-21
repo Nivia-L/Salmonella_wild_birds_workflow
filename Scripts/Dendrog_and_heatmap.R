@@ -278,13 +278,6 @@ p
 # PASO 10 – EXPORTAR
 # ============================================================
 
-ggsave(figure_file("Salmonella_fig3_heatmap.pdf"), plot = p,
-       width = 22, height = 28, units = "cm", device = cairo_pdf)
-
-ggsave(figure_file("Salmonella_fig3_heatmap.png"), plot = p,
-       width = 22, height = 28, units = "cm", dpi = 600, bg = "white")
-ggsave(figure_file("Salmonella_fig3_heatmap.jpg"), plot = p,
-       width = 22, height = 28, units = "cm", dpi = 600, bg = "white")
 ################
 cat("Filas con Wild bird en mat_study:\n")
 print(sum(mat_study$Study == "Wild bird isolates (this study)", na.rm = TRUE))

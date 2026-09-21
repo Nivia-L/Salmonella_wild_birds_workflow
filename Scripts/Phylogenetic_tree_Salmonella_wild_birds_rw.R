@@ -273,10 +273,3 @@ print(p)
 # PASO 9 – GUARDAR
 # ============================================================
 
-ggsave(figure_file("phylo_circular_tree.png"),
-       plot = p, width = 16, height = 16,
-       units = "in", dpi = 300, bg = "white")
-
-ggsave(figure_file("phylo_circular_tree.jpg"),
-       plot = p, width = 16, height = 16,
-       units = "in", dpi = 300, bg = "white")

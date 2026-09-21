@@ -231,12 +231,12 @@ p
 # ============================================================
 
 ggsave(figure_file("Salmonella_fig3rv.pdf"), plot = p,
-       width = 22, height = 35, units = "cm",
+       width = 32, height = 35, units = "cm",
        device = cairo_pdf, limitsize = FALSE)
 
 ggsave(figure_file("Salmonella_fig3rv.png"), plot = p,
-       width = 22, height = 35, units = "cm",
+       width = 32, height = 35, units = "cm",
        dpi = 600, bg = "white", limitsize = FALSE)
 ggsave(figure_file("Salmonella_fig3rv.jpg"), plot = p,
-       width = 22, height = 35, units = "cm",
+       width = 32, height = 35, units = "cm",
        dpi = 600, bg = "white", limitsize = FALSE)

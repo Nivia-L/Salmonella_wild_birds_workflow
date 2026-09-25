@@ -10,8 +10,6 @@ scripts <- c(
   "Scripts/PCA2_raw_rw.R",
   "Scripts/Genome_figure.R",
   "Scripts/Phylogenetic_tree_Salmonella_wild_birds_rw.R",
-  "Scripts/Dendr_rect_nodos_or.R",
-  "Scripts/Dendrog_and_heatmap.R",
   "Scripts/Table_and_SNPdistance_matrix.R"
 )
 

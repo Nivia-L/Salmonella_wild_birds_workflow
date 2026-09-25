@@ -1,179 +1,359 @@
 # Project paths only; no analytical changes.
-setup_candidates <- c(file.path("R", "00_project_setup.R"), file.path("..", "R", "00_project_setup.R"))
+# ============================================================
+# Project paths only; no analytical changes.
+# ============================================================
+
+setup_candidates <- c(
+  file.path("R", "00_project_setup.R"),
+  file.path("..", "R", "00_project_setup.R")
+)
+
 setup_file <- setup_candidates[file.exists(setup_candidates)][1]
-if (is.na(setup_file)) stop("Cannot find R/00_project_setup.R. Open Salmonella_wild_birds.Rproj before running.")
+
+if (is.na(setup_file)) {
+  stop(
+    "Cannot find R/00_project_setup.R. ",
+    "Open Salmonella_wild_birds.Rproj before running."
+  )
+}
+
 source(setup_file)
 
-## ============================================================
-# FIGURA 2 – PCA corregido con aislamientos de este estudio
+
+# ============================================================
+# FIGURA 2 – PCA
+# PCA de los 75 genotipos de S. Infantis
+# Los cuatro aislamientos propios se identifican como:
+# "Wild Birds (This study)"
 # ============================================================
 
 library(adegenet)
 library(ggplot2)
+library(grid)
 
-# ------------------------------------------------------------
+
+# ============================================================
 # 1. CARGAR DATOS
-# ------------------------------------------------------------
+# ============================================================
 
-Data_PCA2 <- read.snp(data_file("Data_PCA2.snp"))
+Data_PCA2 <- read.snp(
+  data_file("Data_PCA2.snp")
+)
 
-# ------------------------------------------------------------
+
+# ============================================================
 # 2. PCA
-# ------------------------------------------------------------
+# ============================================================
 
-pca_res <- glPca(Data_PCA2, nf = 3)
-var     <- pca_res$eig / sum(pca_res$eig) * 100
+pca_res <- glPca(
+  Data_PCA2,
+  nf = 3
+)
 
-# ------------------------------------------------------------
-# 3. DATA FRAME con IDs y población del archivo .snp
-# ------------------------------------------------------------
+var <- pca_res$eig /
+  sum(pca_res$eig) * 100
 
-pca_df         <- as.data.frame(pca_res$scores)
-pca_df$ID      <- indNames(Data_PCA2)
-pca_df$Source  <- as.character(pop(Data_PCA2))  # población original del .snp
 
-# ⚠️ FC-Y-07 no existe en el archivo — se usan los 4 IDs confirmados:
-#    CN-Y-11, FC-Y-11, U154s, U168s
-this_study_ids <- c("CN-Y-11", "FC-Y-11", "U154s", "U168s")
+# ============================================================
+# 3. DATA FRAME DE LA PCA
+#    Source procede de la S1 corregida
+# ============================================================
 
-# Columna Study: distingue "Wild Bird (this study)" del resto
+pca_df <- as.data.frame(pca_res$scores)
+
+pca_df$ID <- indNames(Data_PCA2)
+
+
+# ============================================================
+# 4. CARGAR METADATA OFICIAL DE S1
+# ============================================================
+
+metadata <- read.csv(
+  data_file("Supplementary_Table_S1_metadata.csv"),
+  stringsAsFactors = FALSE
+)
+
+
+# ============================================================
+# 5. ASIGNAR SOURCE DESDE S1
+# ============================================================
+
+pca_df$Source <- metadata$Source[
+  match(
+    pca_df$ID,
+    metadata$Isolate_ID
+  )
+]
+
+
+# ============================================================
+# 6. IDENTIFICAR LOS CUATRO AISLAMIENTOS PROPIOS
+# ============================================================
+
+this_study_ids <- c(
+  "CN-Y-11",
+  "FC-Y-11",
+  "U154s",
+  "U168s"
+)
+
+
+# ============================================================
+# 7. VARIABLE STUDY
+# ============================================================
+
 pca_df$Study <- ifelse(
   pca_df$ID %in% this_study_ids,
-  "Wild Bird (this study)",
-  pca_df$Source
+  "Wild Birds (This study)",
+  "Other isolates"
 )
 
-# Verificar asignación
-cat("Aislamientos de este estudio encontrados:\n")
-print(pca_df[pca_df$Study == "Wild Bird (this study)", c("ID","Source","Study")])
 
-cat("\nDistribución completa:\n")
-print(table(pca_df$Study))
+# ============================================================
+# 8. VERIFICACIONES
+# ============================================================
 
-# ------------------------------------------------------------
-# 4. PALETA – todos los grupos visibles
-# ------------------------------------------------------------
+cat("\n========================================\n")
+cat("PCA – VERIFICACIÓN DE METADATA\n")
+cat("========================================\n")
+
+cat("\nNúmero de genotipos:\n")
+print(nrow(pca_df))
+
+cat("\nConteo por Source:\n")
+print(
+  table(
+    pca_df$Source,
+    useNA = "ifany"
+  )
+)
+
+cat("\nConteo por Study:\n")
+print(
+  table(
+    pca_df$Study,
+    useNA = "ifany"
+  )
+)
+
+cat("\nAislamientos propios:\n")
+
+print(
+  pca_df[
+    pca_df$ID %in% this_study_ids,
+    c(
+      "ID",
+      "Source",
+      "Study"
+    )
+  ]
+)
+
+cat("\nIDs sin Source:\n")
+
+print(
+  pca_df$ID[
+    is.na(pca_df$Source)
+  ]
+)
+
+
+# ============================================================
+# 9. PALETA DE SOURCE
+# ============================================================
 
 source_palette_pca <- c(
-  "Broilers"                = "#1f78b4",
-  "Heavy_breeders"          = "#ff69b4",
-  "Layers"                  = "#33a02c",
-  "Pigeons"                 = "#66c2d4",
-  "Pigs"                    = "#ff8c00",
-  "Wild_Duck"               = "#b15928",
-  "Human"                   = "#e31a1c",
-  "Dogs"                    = "#808000",
-  "Supermarket_environment" = "#f0e6b6",
-  "Wild Bird (this study)"  = "green"
+
+  "Broilers" =
+    "#1f78b4",
+
+  "Human" =
+    "#e31a1c",
+
+  "Layers" =
+    "#33a02c",
+
+  "Pigs" =
+    "#ff7f00",
+
+  "Supermarket environment" =
+    "#fdbf6f",
+
+  "Wild Birds" =
+    "green"
+
 )
 
-# ------------------------------------------------------------
-# 5. GRÁFICO
-# ------------------------------------------------------------
 
-p_pca <- ggplot(pca_df, aes(PC1, PC2, color = Study)) +
-  
-  # Líneas de referencia
-  geom_vline(xintercept = 0, linetype = "dashed", color = "grey70", linewidth = 0.4) +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "grey70", linewidth = 0.4) +
-  
-  # Elipses por grupo (excluyendo Wild Bird — solo 4 puntos)
-  stat_ellipse(
-    data      = subset(pca_df, Study != "Wild Bird (this study)"),
-    aes(group = Study),
-    linewidth = 0.35,
-    linetype  = "dashed",
-    alpha     = 0.5
+# ============================================================
+# 10. GRAFICO PCA
+# ============================================================
+
+# Paleta para Source + aislamientos propios
+pca_palette <- c(
+  "Broilers" = "#1f78b4",
+  "Human" = "#e31a1c",
+  "Layers" = "#33a02c",
+  "Pigs" = "#ff7f00",
+  "Supermarket environment" = "#fdbf6f",
+  "Wild Bird" = "grey50",
+  "Wild Birds (This study)" = "green"
+)
+
+p_pca <- ggplot(
+  pca_df,
+  aes(
+    x = PC1,
+    y = PC2
+  )
+) +
+
+  geom_vline(
+    xintercept = 0,
+    color = "grey70",
+    linewidth = 0.4
   ) +
-  
-  # Puntos regulares
+
+  geom_hline(
+    yintercept = 0,
+    color = "grey70",
+    linewidth = 0.4
+  ) +
+
+  # ----------------------------------------------------------
+  # AISLAMIENTOS EXTERNOS
+  # Color según Source
+  # ----------------------------------------------------------
+
   geom_point(
-    data  = subset(pca_df, Study != "Wild Bird (this study)"),
-    size  = 2.5,
+    data = subset(
+      pca_df,
+      Study != "Wild Birds (This study)"
+    ),
+    aes(color = Source),
+    size = 2.5,
     alpha = 0.85
   ) +
-  
-  # Wild Bird (este estudio) — triángulo más grande encima
+
+  # ----------------------------------------------------------
+  # AISLAMIENTOS PROPIOS
+  # Color y etiqueta propia
+  # ----------------------------------------------------------
+
   geom_point(
-    data  = subset(pca_df, Study == "Wild Bird (this study)"),
-    size  = 4,
-    shape = 17
+    data = subset(
+      pca_df,
+      Study == "Wild Birds (This study)"
+    ),
+    aes(color = Study),
+    shape = 17,
+    size = 4
   ) +
-  
-  scale_color_manual(values = source_palette_pca) +
+
+  scale_color_manual(
+    name = "Source",
+    values = pca_palette,
+    breaks = c(
+      "Broilers",
+      "Human",
+      "Layers",
+      "Pigs",
+      "Supermarket environment",
+      "Wild Bird",
+      "Wild Birds (This study)"
+    ),
+    drop = FALSE
+  ) +
+
   coord_equal() +
-  theme_classic(base_size = 12) +
-  labs(
-    x     = paste0("PC1 (", round(var[1], 1), "%)"),
-    y     = paste0("PC2 (", round(var[2], 1), "%)"),
-    color = "Source"
+
+  theme_classic(
+    base_size = 12
   ) +
+
+  labs(
+    x = paste0(
+      "PC1 (",
+      round(var[1], 1),
+      "%)"
+    ),
+    y = paste0(
+      "PC2 (",
+      round(var[2], 1),
+      "%)"
+    )
+  ) +
+
   theme(
-    legend.title    = element_text(face = "bold", size = 10),
-    legend.text     = element_text(size = 9),
-    legend.key.size = unit(0.4, "cm"),
-    plot.margin     = margin(10, 10, 10, 10)
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 11),
+
+    legend.position = "bottom",
+
+    legend.title = element_text(
+      face = "bold",
+      size = 11
+    ),
+
+    legend.text = element_text(size = 10),
+
+    legend.key.size = unit(
+      0.45,
+      "cm"
+    ),
+
+    legend.spacing.x = unit(
+      0.3,
+      "cm"
+    ),
+
+    plot.margin = margin(
+      8,
+      8,
+      8,
+      8
+    )
   )
 
-p_pca
+# ============================================================
+# 11. MOSTRAR FIGURA
+# ============================================================
+
+print(p_pca)
 
 
-# ------------------------------------------------------------
-# 5. GRÁFICO (LIMPIO + LÍNEAS DE COORDENADAS)
-# ------------------------------------------------------------
+# ============================================================
 
-p_pca <- ggplot(pca_df, aes(PC1, PC2, color = Study)) +
-  
-  # Líneas de coordenadas (gris suave)
-  geom_vline(xintercept = 0, color = "grey70", linewidth = 0.4) +
-  geom_hline(yintercept = 0, color = "grey70", linewidth = 0.4) +
-  
-  # Puntos regulares
-  geom_point(
-    data  = subset(pca_df, Study != "Wild Bird (this study)"),
-    size  = 2.5,
-    alpha = 0.85
-  ) +
-  
-  # Wild Bird (este estudio) — triángulo destacado
-  geom_point(
-    data  = subset(pca_df, Study == "Wild Bird (this study)"),
-    size  = 4,
-    shape = 17
-  ) +
-  
-  scale_color_manual(values = source_palette_pca) +
-  
-  coord_equal() +
-  
-  theme_classic() +
-  
-  labs(
-    x     = paste0("PC1 (", round(var[1], 1), "%)"),
-    y     = paste0("PC2 (", round(var[2], 1), "%)"),
-    color = "Source"
-  ) +
-  
-  theme(
-    axis.title      = element_text(size = 12),
-    axis.text       = element_text(size = 12),
-    legend.title    = element_text(face = "bold", size = 12),
-    legend.text     = element_text(size = 11),
-    legend.key.size = unit(0.4, "cm"),
-    plot.margin     = margin(10, 10, 10, 10)
-  )
+# 12. EXPORTAR FIGURA
+# ============================================================
+pdf(
+  file = figure_file("Figure2_PCA.pdf"),
+  width = 8,
+  height = 6.5
+)
+print(p_pca)
+dev.off()
 
-p_pca
+png(
+  filename = figure_file("Figure2_PCA.png"),
+  width = 8,
+  height = 6.5,
+  units = "in",
+  res = 600
+)
+print(p_pca)
+dev.off()
 
-# ------------------------------------------------------------
-# 6. EXPORTAR
-# ------------------------------------------------------------
-ggsave(figure_file("Figure2_PCA.pdf"), plot = p_pca,
-       width = 8, height = 8, device = cairo_pdf)
-
-ggsave(figure_file("Figure2_PCA.png"), plot = p_pca,
-       width = 8, height = 6, dpi = 600, bg = "white")
-ggsave(figure_file("Figure2_PCA.jpg"), plot = p_pca,
-       width = 8, height = 6, dpi = 600, bg = "white")
-##############
-
+jpeg(
+  filename = figure_file("Figure2_PCA.jpg"),
+  width = 8,
+  height = 6.5,
+  units = "in",
+  res = 600,
+  quality = 100
+)
+print(p_pca)
+dev.off()
+# ============================================================
+# FIN DEL SCRIPT
+# ============================================================

@@ -78,10 +78,7 @@ snp_df <- data.frame(
 )
 snp_df$Isolate_ID[snp_df$Isolate_ID == "U2106s (b)"] <- "b"
 
-metadata <- left_join(metadata, snp_df, by = "Isolate_ID")
-metadata$Source <- ifelse(!is.na(metadata$Source_snp),
-                          metadata$Source_snp,
-                          metadata$Source)
+metadata <- left_join(metadata, snp_df, by = 'Isolate_ID')
 metadata$Source_snp <- NULL
 
 # ============================================================
@@ -90,7 +87,7 @@ metadata$Source_snp <- NULL
 
 this_study_ids <- c("CN-Y-11", "FC-Y-11", "U154s", "U168s")
 metadata$Source[metadata$Isolate_ID %in% this_study_ids] <- "Wild Bird"
-metadata$Study[metadata$Isolate_ID %in% this_study_ids]  <- "Wild bird isolates (this study)"
+metadata$Study[metadata$Isolate_ID %in% this_study_ids]  <- "Wild Birds (This study)"
 
 cat("Sources únicos:\n")
 print(sort(unique(metadata$Source)))
@@ -116,7 +113,7 @@ source_palette <- c(
 
 # Color del anillo externo por Study
 study_palette <- c(
-  "Wild bird isolates (this study)" = "green")
+  "Wild Birds (This study)" = "green")
  
 
 # ============================================================
@@ -249,7 +246,7 @@ p <- p +
 p <- p +
   scale_shape_manual(
     name   = "Study",
-    values = c("Wild bird isolates (this study)" = 15),
+    values = c("Wild Birds (This study)" = 15),
     guide  = guide_legend(
       title.position = "top",
       ncol           = 1,
@@ -258,7 +255,7 @@ p <- p +
   ) +
   geom_point(
     data        = data.frame(x = Inf, y = Inf,
-                             Study = "Wild bird isolates (this study)"),
+                             Study = "Wild Birds (This study)"),
     aes(x = x, y = y, shape = Study),
     color       = "white",   # ← invisible en el plot
     size        = 0.001,
